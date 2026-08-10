@@ -1,0 +1,72 @@
+# Local development stack: everything except Supabase and Azure Blob, which
+# are external managed services configured via .env (see docs/deployment.md).
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mongodb:
+    image: mongo:7
+    ports: ["27017:27017"]
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build: ./services/auth-service
+    env_file: ./services/auth-service/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+    ports: ["5000:5000"]
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  main-service:
+    build: ./services/main-service
+    env_file: ./services/main-service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - AI_STORAGE_SERVICE_URL=http://ai-storage-service:5002
+    ports: ["5001:5001"]
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  ai-storage-service:
+    build: ./services/ai-storage-service
+    env_file: ./services/ai-storage-service/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - REDIS_URL=redis://redis:6379
+    ports: ["5002:5002"]
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    environment:
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:5000
+      - NEXT_PUBLIC_MAIN_API_URL=http://localhost:5001
+    ports: ["3000:3000"]
+    depends_on:
+      - auth-service
+      - main-service
+      - ai-storage-service
+
+volumes:
+  mongo-data:

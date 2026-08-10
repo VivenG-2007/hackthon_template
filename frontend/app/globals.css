@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  background-color: #0B0E14;
+  color: #F6F5F1;
+}
+
+.grid-overlay {
+  background-image:
+    linear-gradient(rgba(91, 141, 239, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 141, 239, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+::selection {
+  background: #5B8DEF;
+  color: #0B0E14;
+}
+
+*:focus-visible {
+  outline: 2px solid #5B8DEF;
+  outline-offset: 2px;
+}

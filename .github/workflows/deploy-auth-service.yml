@@ -1,0 +1,49 @@
+name: Deploy auth-service to Azure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/auth-service/**'
+      - '.github/workflows/deploy-auth-service.yml'
+  workflow_dispatch: {}
+
+# Uses Azure's OIDC federated-credential login (no client secret stored in
+# GitHub). Create the federated credential on your App Registration for
+# repo:<org>/<repo>:ref:refs/heads/main — see docs/deployment.md for the
+# exact steps and for the AADSTS700213 "subject mismatch" gotcha if GitHub
+# renames your repo mid-setup.
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/auth-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: services/auth-service/package-lock.json
+
+      - run: npm ci --omit=dev
+      - run: npm test --if-present
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AUTH_SERVICE_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AUTH_SERVICE_AZURE_APP_NAME }}
+          package: services/auth-service

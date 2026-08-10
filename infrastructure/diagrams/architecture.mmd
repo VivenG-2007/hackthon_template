@@ -1,0 +1,23 @@
+%% Render at https://mermaid.live or with the Mermaid VS Code extension.
+%% This is the same diagram described in docs/architecture.md, in mermaid form
+%% for embedding in slides during judging.
+flowchart TB
+    subgraph Vercel
+        FE[Next.js Frontend]
+    end
+
+    subgraph Azure["Azure App Services (v3 plans)"]
+        AUTH[auth-service<br/>MongoDB · owns JWT private key]
+        MAIN[main-service<br/>Supabase · Redis<br/>verifies JWT locally]
+        AI[ai-storage-service<br/>MongoDB · Redis · Azure Blob<br/>pluggable AI provider<br/>verifies JWT locally]
+    end
+
+    FE -->|login/register/refresh| AUTH
+    FE -->|product API, cookie/Bearer JWT| MAIN
+    MAIN -->|/api/proxy/* forwards JWT| AI
+    FE -.->|optional direct calls, same JWT verified locally| AI
+
+    style AUTH fill:#232838,stroke:#5B8DEF,color:#F6F5F1
+    style MAIN fill:#232838,stroke:#5B8DEF,color:#F6F5F1
+    style AI fill:#232838,stroke:#5B8DEF,color:#F6F5F1
+    style FE fill:#111623,stroke:#5B8DEF,color:#F6F5F1

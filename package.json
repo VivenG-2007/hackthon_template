@@ -1,0 +1,24 @@
+{
+  "name": "hackathon-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Universal hackathon starter: 1 frontend + 3 backends (auth, main, ai-storage), wired end-to-end with JWT, Redis, Supabase, MongoDB, and Azure Blob.",
+  "scripts": {
+    "dev": "concurrently -n auth,main,ai,web -c blue,green,magenta,yellow \"npm --prefix services/auth-service run dev\" \"npm --prefix services/main-service run dev\" \"npm --prefix services/ai-storage-service run dev\" \"npm --prefix frontend run dev\"",
+    "install:all": "npm install --prefix services/auth-service && npm install --prefix services/main-service && npm install --prefix services/ai-storage-service && npm install --prefix frontend",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix services/auth-service test && npm --prefix services/main-service test && npm --prefix services/ai-storage-service test",
+    "lint": "npm --prefix services/auth-service run lint && npm --prefix services/main-service run lint && npm --prefix services/ai-storage-service run lint && npm --prefix frontend run lint",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down -v",
+    "generate-keys": "npm --prefix services/auth-service run generate-keys",
+    "loadtest:main": "node load-test/main-benchmark.js",
+    "loadtest:auth": "node load-test/auth-benchmark.js",
+    "loadtest:ai": "node load-test/ai-benchmark.js",
+    "loadtest:mixed": "node load-test/mixed-benchmark.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "autocannon": "^7.15.0"
+  }
+}
