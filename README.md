@@ -7,7 +7,7 @@ so your team spends the weekend on your idea, not on infrastructure plumbing.
 ```
 Vercel (frontend) → main-service (Azure, Supabase+Redis) → ai-storage-service (Azure, Mongo+Redis+Blob)
                                                     ↑
-                                           auth-service (Azure, Mongo) — issues JWTs
+                                           auth-service (Azure, Mongo) — issues JWTs;
 ```
 
 Full diagram: [`docs/architecture.md`](docs/architecture.md) · mermaid source: [`infrastructure/diagrams/architecture.mmd`](infrastructure/diagrams/architecture.mmd)
